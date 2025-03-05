@@ -1,5 +1,6 @@
 import React from 'react';
-import { Filter } from '../App';
+import { Filter } from '../types/Filter';
+import classNames from 'classnames';
 
 type FooterProps = {
   activeCount: number;
@@ -12,48 +13,36 @@ const Footer: React.FC<FooterProps> = ({
   currentFilter,
   setCurrentFilter,
 }) => {
+  const formatFilter = (filter: Filter) => {
+    return filter.charAt(0).toUpperCase() + filter.slice(1);
+  };
+
+  const handleFilterClick =
+    (filter: Filter) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      setCurrentFilter(filter);
+    };
+
   return (
     <footer className="todoapp__footer">
       <span className="todo-count" data-cy="TodosCounter">
-        {`${activeCount} items left`}
+        {activeCount} items left
       </span>
 
       <nav className="filter" data-cy="Filter">
-        <a
-          href="#/"
-          className={`filter__link ${currentFilter === 'all' ? 'selected' : ''}`}
-          data-cy="FilterLinkAll"
-          onClick={e => {
-            e.preventDefault();
-            setCurrentFilter('all');
-          }}
-        >
-          All
-        </a>
-
-        <a
-          href="#/active"
-          className={`filter__link ${currentFilter === 'active' ? 'selected' : ''}`}
-          data-cy="FilterLinkActive"
-          onClick={e => {
-            e.preventDefault();
-            setCurrentFilter('active');
-          }}
-        >
-          Active
-        </a>
-
-        <a
-          href="#/completed"
-          className={`filter__link ${currentFilter === 'completed' ? 'selected' : ''}`}
-          data-cy="FilterLinkCompleted"
-          onClick={e => {
-            e.preventDefault();
-            setCurrentFilter('completed');
-          }}
-        >
-          Completed
-        </a>
+        {Object.values(Filter).map(filter => (
+          <a
+            key={filter}
+            href={filter === Filter.All ? '#/' : `#/${filter}`}
+            className={classNames('filter__link', {
+              selected: currentFilter === filter,
+            })}
+            data-cy={`FilterLink${formatFilter(filter)}`}
+            onClick={handleFilterClick(filter)}
+          >
+            {formatFilter(filter)}
+          </a>
+        ))}
       </nav>
 
       <button
