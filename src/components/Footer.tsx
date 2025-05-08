@@ -1,11 +1,11 @@
 import React from 'react';
-import { Filter } from '../types/Filter';
+import { TypeFilter } from '../types/TypeFilter';
 import classNames from 'classnames';
 
 type FooterProps = {
   activeCount: number;
-  currentFilter: Filter;
-  setCurrentFilter: (filter: Filter) => void;
+  currentFilter: TypeFilter;
+  setCurrentFilter: (filter: TypeFilter) => void;
 };
 
 const Footer: React.FC<FooterProps> = ({
@@ -13,12 +13,12 @@ const Footer: React.FC<FooterProps> = ({
   currentFilter,
   setCurrentFilter,
 }) => {
-  const formatFilter = (filter: Filter) => {
+  const formatFilter = (filter: TypeFilter) => {
     return filter.charAt(0).toUpperCase() + filter.slice(1);
   };
 
   const handleFilterClick =
-    (filter: Filter) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    (filter: TypeFilter) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
       setCurrentFilter(filter);
     };
@@ -30,10 +30,10 @@ const Footer: React.FC<FooterProps> = ({
       </span>
 
       <nav className="filter" data-cy="Filter">
-        {Object.values(Filter).map(filter => (
+        {Object.values(TypeFilter).map(filter => (
           <a
             key={filter}
-            href={filter === Filter.All ? '#/' : `#/${filter}`}
+            href={filter === TypeFilter.All ? '#/' : `#/${filter}`}
             className={classNames('filter__link', {
               selected: currentFilter === filter,
             })}

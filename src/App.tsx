@@ -1,30 +1,31 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getTodos } from './api/todos';
 import { Todo } from './types/Todo';
-import { Filter } from './types/Filter';
+import { TypeFilter } from './types/TypeFilter';
 import Header from './components/Header';
 import TodoList from './components/TodoList';
 import Footer from './components/Footer';
 import ErrorNotification from './components/ErrorNotification';
 
 export const App: React.FC = () => {
-  const [todoList, setTodoList] = useState<Todo[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [currentFilter, setCurrentFilter] = useState<Filter>(Filter.All);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [filter, setFilter] = useState<TypeFilter>(TypeFilter.All);
 
   useEffect(() => {
     const loadTodos = async () => {
       try {
-        setLoading(true);
-        setErrorMessage(null);
-        const todos = await getTodos();
+        setIsLoading(true);
+        setError(null);
 
-        setTodoList(todos);
+        const todosData = await getTodos();
+
+        setTodos(todosData);
       } catch {
-        setErrorMessage('Unable to load todos');
+        setError('Unable to load todos');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -32,32 +33,39 @@ export const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!errorMessage) {
+    if (!error) {
       return;
     }
 
-    const timer = setTimeout(() => setErrorMessage(null), 3000);
+    const timer = setTimeout(() => setError(null), 3000);
 
     return () => clearTimeout(timer);
-  }, [errorMessage]);
+  }, [error]);
+
+  const activeTodos = useMemo(
+    () => todos.filter(todo => !todo.completed),
+    [todos],
+  );
+
+  const completedTodos = useMemo(
+    () => todos.filter(todo => todo.completed),
+    [todos],
+  );
+
+  const activeCount = activeTodos.length;
 
   const filteredTodos = useMemo(() => {
-    switch (currentFilter) {
-      case Filter.Active:
-        return todoList.filter(todo => !todo.completed);
+    switch (filter) {
+      case TypeFilter.Active:
+        return activeTodos;
 
-      case Filter.Completed:
-        return todoList.filter(todo => todo.completed);
+      case TypeFilter.Completed:
+        return completedTodos;
 
       default:
-        return todoList;
+        return todos;
     }
-  }, [todoList, currentFilter]);
-
-  const activeTodosCount = useMemo(
-    () => todoList.filter(todo => !todo.completed).length,
-    [todoList],
-  );
+  }, [filter, activeTodos, completedTodos, todos]);
 
   return (
     <div className="todoapp">
@@ -66,27 +74,24 @@ export const App: React.FC = () => {
       <div className="todoapp__content">
         <Header />
 
-        {loading ? (
+        {isLoading ? (
           <div className="notification is-info">Loading...</div>
         ) : (
-          todoList.length > 0 && (
+          todos.length > 0 && (
             <>
               <TodoList todos={filteredTodos} />
 
               <Footer
-                activeCount={activeTodosCount}
-                currentFilter={currentFilter}
-                setCurrentFilter={setCurrentFilter}
+                activeCount={activeCount}
+                currentFilter={filter}
+                setCurrentFilter={setFilter}
               />
             </>
           )
         )}
       </div>
 
-      <ErrorNotification
-        errorMessage={errorMessage}
-        onHide={() => setErrorMessage(null)}
-      />
+      <ErrorNotification errorMessage={error} onHide={() => setError(null)} />
     </div>
   );
 };
